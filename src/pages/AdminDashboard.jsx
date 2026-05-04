@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Users, BookOpen, Plus, Upload, FileJson, CheckCircle2, AlertCircle, Clock, UserCheck, UserX, Shield, BarChart2 } from 'lucide-react';
+import { Users, BookOpen, Plus, Upload, CheckCircle2, AlertCircle, Clock, UserCheck, UserX, Shield, BarChart2 } from 'lucide-react';
+import QuestionImport from '../components/QuestionImport';
 
 const TABS = ['overview', 'students', 'tests', 'import'];
 
@@ -256,24 +257,7 @@ function AdminDashboard() {
 
       {/* IMPORT */}
       {activeTab === 'import' && (
-        <div className="animate-slide-up" style={{ maxWidth: '700px' }}>
-          <div className="card card-body">
-            <h3 style={{ marginBottom: '28px', display: 'flex', alignItems: 'center', gap: '10px' }}><FileJson size={22} color="var(--brand)" /> Bulk Question Import</h3>
-            <div className="form-group">
-              <label className="form-label">Select Test</label>
-              <select className="form-select" value={selectedTestId} onChange={e => setSelectedTestId(e.target.value)}>
-                <option value="">Choose a test...</option>
-                {tests.map(t => <option key={t._id} value={t._id}>{t.title} ({t.totalQuestions} Qs)</option>)}
-              </select>
-            </div>
-            <div className="form-group">
-              <label className="form-label">JSON Question Array</label>
-              <textarea className="form-textarea" style={{ minHeight: '220px', fontFamily: 'monospace', fontSize: '0.82rem' }} placeholder='[{"subject":"Physics","text":"...","options":["A","B","C","D"],"correctOptionIndex":0,"solutionText":"..."}]' value={importJson} onChange={e => setImportJson(e.target.value)} />
-              <p style={{ marginTop: '6px', fontSize: '0.8rem', color: 'var(--slate-400)' }}>Must be a valid JSON array of question objects.</p>
-            </div>
-            <button className="btn btn-primary btn-full btn-lg" onClick={handleImportQuestions}>Execute Import</button>
-          </div>
-        </div>
+        <QuestionImport tests={tests} />
       )}
 
       {/* Approve Modal Overlay */}
