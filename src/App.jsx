@@ -12,6 +12,9 @@ import SolutionReview from './pages/SolutionReview';
 import AdminDashboard from './pages/AdminDashboard';
 import PendingApproval from './pages/PendingApproval';
 import Profile from './pages/Profile';
+import Practice from './pages/Practice';
+import PracticeSession from './pages/PracticeSession';
+import Notifications from './pages/Notifications';
 
 // Protected Route: requires JWT
 const ProtectedRoute = ({ children }) => {
@@ -54,12 +57,15 @@ function App() {
       <Route path="/pending" element={<ProtectedRoute><PendingApproval /></ProtectedRoute>} />
 
       {/* Protected + Layout wrapped pages */}
-      <Route path="/home" element={<ApprovedRoute><Layout><Home /></Layout></ApprovedRoute>} />
-      <Route path="/tests" element={<ApprovedRoute><Layout><MockTests /></Layout></ApprovedRoute>} />
-      <Route path="/results" element={<ApprovedRoute><Layout><Results /></Layout></ApprovedRoute>} />
-      <Route path="/profile" element={<ProtectedRoute><Layout><Profile /></Layout></ProtectedRoute>} />
-      <Route path="/result/:id" element={<ApprovedRoute><Layout><ResultAnalysis /></Layout></ApprovedRoute>} />
-      <Route path="/review/:id" element={<ApprovedRoute><Layout><SolutionReview /></Layout></ApprovedRoute>} />
+      <Route path="/home"     element={<ApprovedRoute><Layout><Home /></Layout></ApprovedRoute>} />
+      <Route path="/tests"    element={<ApprovedRoute><Layout><MockTests /></Layout></ApprovedRoute>} />
+      <Route path="/results"  element={<ApprovedRoute><Layout><Results /></Layout></ApprovedRoute>} />
+      <Route path="/profile"  element={<ProtectedRoute><Layout><Profile /></Layout></ProtectedRoute>} />
+      <Route path="/practice" element={<ApprovedRoute><Layout><Practice /></Layout></ApprovedRoute>} />
+      <Route path="/practice/:subject/:chapter" element={<ApprovedRoute><Layout><PracticeSession /></Layout></ApprovedRoute>} />
+      <Route path="/notifications" element={<ProtectedRoute><Layout><Notifications /></Layout></ProtectedRoute>} />
+      <Route path="/result/:id"   element={<ApprovedRoute><Layout><ResultAnalysis /></Layout></ApprovedRoute>} />
+      <Route path="/review/:id"   element={<ApprovedRoute><Layout><SolutionReview /></Layout></ApprovedRoute>} />
       
       {/* Exam - no Navbar, fullscreen */}
       <Route path="/exam" element={<ApprovedRoute><Exam /></ApprovedRoute>} />

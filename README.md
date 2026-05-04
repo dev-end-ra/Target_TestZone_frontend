@@ -35,8 +35,11 @@ frontend/
 │   │   ├── SolutionReview.jsx  # Per-question solution with correct/wrong highlight
 │   │   ├── Results.jsx         # Full test history table
 │   │   ├── Profile.jsx         # Avatar upload, personal info, performance stats
-│   │   ├── AdminDashboard.jsx  # Admin: students, tests, bulk import
-│   │   └── PendingApproval.jsx # Screen shown to unapproved students
+│   │   ├── Practice.jsx          # Subject → Chapter picker for practice mode
+│   │   ├── PracticeSession.jsx   # One-question-at-a-time with instant feedback
+│   │   ├── Notifications.jsx     # Full notifications list
+│   │   ├── AdminDashboard.jsx    # Admin: students, tests, bulk import, broadcast
+│   │   └── PendingApproval.jsx   # Screen shown to unapproved students
 │   │
 │   ├── App.jsx                 # Router with ProtectedRoute / ApprovedRoute / AdminRoute
 │   ├── main.jsx                # Entry: BrowserRouter + GoogleOAuthProvider
