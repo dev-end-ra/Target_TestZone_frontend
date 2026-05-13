@@ -1,151 +1,204 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { BookOpen, Clock, FileText, Search, Filter } from 'lucide-react';
+import { BookOpen, Search, Filter, Clock, HelpCircle, ArrowRight, Calendar, AlertCircle } from 'lucide-react';
 
 function MockTests() {
-  const navigate = useNavigate();
   const [tests, setTests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterType, setFilterType] = useState('all');
+  const [filterType, setFilterType] = useState('All');
+  const navigate = useNavigate();
+
+  const token = localStorage.getItem('token');
+  const config = { headers: { Authorization: `Bearer ${token}` } };
 
   useEffect(() => {
-    const fetchTests = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        const res = await axios.get('http://localhost:5000/api/tests', { headers: { Authorization: `Bearer ${token}` } });
+    axios.get('http://localhost:5000/api/tests', config)
+      .then(res => {
         setTests(res.data);
-      } catch (err) {
-        console.error('Failed to fetch tests', err);
-        // Show mock data if empty
-        setTests([{
-          _id: '663200000000000000000000',
-          title: 'MHT-CET Mock Test 1',
-          type: 'MHTCET-PCM',
-          durationSeconds: 10800,
-          totalQuestions: 150,
-          liveAt: new Date(Date.now() - 86400000).toISOString(),
-          isActive: true
-        }]);
-      }
-      setLoading(false);
-    };
-    fetchTests();
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
   }, []);
 
-  const filtered = tests.filter(t => {
-    const matchSearch = t.title.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchType = filterType === 'all' || t.type === filterType;
-    return matchSearch && matchType;
+  const filteredTests = tests.filter(test => {
+    const matchesSearch = test.title.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesType = filterType === 'All' || test.type === filterType;
+    return matchesSearch && matchesType;
   });
 
-  const now = new Date();
-  const getStatus = (test) => {
-    const liveAt = test.liveAt ? new Date(test.liveAt) : null;
-    const liveUntil = test.liveUntil ? new Date(test.liveUntil) : null;
-    if (liveAt && liveAt > now) return 'upcoming';
-    if (liveUntil && liveUntil < now) return 'expired';
-    return 'live';
-  };
+  const examTypes = ['All', 'MHTCET-PCM', 'MHTCET-PCB', 'JEE'];
 
-  if (loading) {
-    return (
-      <div className="page-wrapper flex-center" style={{ height: '70vh' }}>
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ width: '48px', height: '48px', border: '4px solid var(--slate-200)', borderTop: '4px solid var(--brand)', borderRadius: '50%', animation: 'spin 0.8s linear infinite', margin: '0 auto 16px' }}></div>
-          <p style={{ fontWeight: '600', color: 'var(--slate-500)' }}>Loading tests...</p>
-        </div>
-        <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
-      </div>
-    );
-  }
+  if (loading) return (
+    <div className="page-wrapper flex-center" style={{ height: '70vh' }}>
+      <div className="animate-spin" style={{ width: '30px', height: '30px', border: '3px solid var(--gray-200)', borderTopColor: 'var(--brand)', borderRadius: '50%' }} />
+    </div>
+  );
 
   return (
     <div className="page-wrapper">
       <div className="page-header animate-slide-up">
-        <h1>Mock Test Library</h1>
-        <p>Browse all available mock tests for MHT-CET and JEE. Only live tests can be attempted.</p>
+        <h1 style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <BookOpen size={28} color="var(--brand)" /> 
+          Mock Test Series
+        </h1>
+        <p>Attempt full-length mock tests designed to simulate the actual exam environment.</p>
       </div>
 
-      {/* Filters */}
-      <div className="animate-slide-up card" style={{ animationDelay: '0.05s', marginBottom: '32px' }}>
-        <div className="card-body" style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', padding: '20px 24px' }}>
-          <div style={{ flex: 1, minWidth: '200px', position: 'relative' }}>
-            <Search size={16} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: 'var(--slate-400)', pointerEvents: 'none' }} />
-            <input 
-              className="form-input" 
-              placeholder="Search tests..." 
-              value={searchTerm} 
-              onChange={e => setSearchTerm(e.target.value)} 
-              style={{ paddingLeft: '40px' }} 
-            />
-          </div>
-          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-            <Filter size={16} style={{ color: 'var(--slate-400)' }} />
-            {['all', 'MHTCET-PCM', 'MHTCET-PCB', 'JEE'].map(t => (
-              <button key={t} onClick={() => setFilterType(t)} className={`btn btn-sm ${filterType === t ? 'btn-primary' : 'btn-secondary'}`}>
-                {t === 'all' ? 'All' : t.replace('MHTCET-', 'MHT-CET ')}
+      {/* Filters Bar */}
+      <div className="animate-slide-up" style={{ 
+        display: 'flex', 
+        gap: '16px', 
+        marginBottom: '32px', 
+        flexWrap: 'wrap',
+        background: '#fff',
+        padding: '16px',
+        borderRadius: 'var(--radius-lg)',
+        border: '1px solid var(--border)',
+        alignItems: 'center'
+      }}>
+        <div style={{ position: 'relative', flex: 1, minWidth: '240px' }}>
+          <Search size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+          <input 
+            type="text" 
+            className="form-input" 
+            placeholder="Search tests by name..." 
+            style={{ paddingLeft: '40px', marginBottom: 0 }}
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+        
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <Filter size={18} color="var(--text-muted)" />
+          <div style={{ display: 'flex', gap: '6px' }}>
+            {examTypes.map(type => (
+              <button 
+                key={type} 
+                onClick={() => setFilterType(type)}
+                className={`btn btn-sm ${filterType === type ? 'btn-primary' : 'btn-secondary'}`}
+                style={{ fontSize: '0.75rem', padding: '6px 12px' }}
+              >
+                {type}
               </button>
             ))}
           </div>
         </div>
       </div>
 
-      {filtered.length === 0 ? (
-        <div className="card card-body animate-fade-in" style={{ textAlign: 'center', padding: '80px 40px' }}>
-          <BookOpen size={56} style={{ margin: '0 auto 20px', color: 'var(--slate-300)' }} />
-          <h3 style={{ color: 'var(--slate-600)', marginBottom: '8px' }}>No tests found</h3>
-          <p style={{ color: 'var(--slate-400)' }}>Try adjusting your filters or search term.</p>
+      {/* Test Grid */}
+      {filteredTests.length === 0 ? (
+        <div className="card animate-slide-up" style={{ textAlign: 'center', padding: '80px 20px' }}>
+          <AlertCircle size={48} style={{ margin: '0 auto 16px', color: 'var(--gray-300)' }} />
+          <h3>No tests found</h3>
+          <p>Try adjusting your search or filters.</p>
         </div>
       ) : (
         <div className="grid-3 stagger">
-          {filtered.map((test, i) => {
-            const status = getStatus(test);
-            const typeColors = { 'MHTCET-PCM': { bg: '#eef2ff', color: '#4f46e5', label: 'MHT-CET PCM' }, 'MHTCET-PCB': { bg: '#f0fdf4', color: '#059669', label: 'MHT-CET PCB' }, 'JEE': { bg: '#fff7ed', color: '#d97706', label: 'JEE MAIN' } };
-            const tc = typeColors[test.type] || { bg: '#f1f5f9', color: '#64748b', label: test.type };
-            
-            return (
-              <div key={test._id} className={`card ${status === 'live' ? 'card-hover' : ''} animate-slide-up`} style={{ animationDelay: `${i * 0.06}s`, opacity: status === 'expired' ? 0.6 : 1 }}>
-                <div className="card-body">
-                  <div className="flex-between" style={{ marginBottom: '16px' }}>
-                    <span className="badge" style={{ background: tc.bg, color: tc.color }}>{tc.label}</span>
-                    {status === 'live' && <span className="badge badge-success" style={{ display: 'flex', alignItems: 'center', gap: '5px' }}><span style={{ width: '7px', height: '7px', background: 'var(--success)', borderRadius: '50%', animation: 'pulse-ring 1.5s ease infinite' }}></span>Live</span>}
-                    {status === 'upcoming' && <span className="badge badge-warning">Upcoming</span>}
-                    {status === 'expired' && <span className="badge badge-neutral">Expired</span>}
-                  </div>
-
-                  <h3 style={{ fontSize: '1.1rem', fontWeight: '700', color: 'var(--slate-900)', marginBottom: '12px' }}>{test.title}</h3>
-
-                  <div style={{ display: 'flex', gap: '20px', marginBottom: '24px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--slate-500)', fontSize: '0.85rem' }}>
-                      <FileText size={14} /> {test.totalQuestions || '—'} Qs
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--slate-500)', fontSize: '0.85rem' }}>
-                      <Clock size={14} /> {Math.floor(test.durationSeconds / 60)} min
-                    </div>
-                  </div>
-
-                  {status === 'upcoming' && test.liveAt && (
-                    <div className="alert alert-warning" style={{ marginBottom: '16px', fontSize: '0.82rem', padding: '10px 14px' }}>
-                      Starts {new Date(test.liveAt).toLocaleString()}
-                    </div>
-                  )}
-
-                  <button 
-                    className={`btn btn-full btn-md ${status === 'live' ? 'btn-primary' : 'btn-secondary'}`}
-                    onClick={() => status === 'live' && navigate('/exam')}
-                    disabled={status !== 'live'}
-                    style={status !== 'live' ? { cursor: 'not-allowed', opacity: 0.6 } : {}}
-                  >
-                    {status === 'live' ? 'Begin Exam' : status === 'upcoming' ? 'Not Started Yet' : 'Test Expired'}
-                  </button>
-                </div>
-              </div>
-            );
-          })}
+          {filteredTests.map((test, i) => (
+            <TestCard 
+              key={test._id} 
+              test={test} 
+              index={i} 
+              onStart={() => navigate('/exam')} 
+            />
+          ))}
         </div>
       )}
+    </div>
+  );
+}
+
+function TestCard({ test, onStart, index }) {
+  const now = new Date();
+  const liveAt = test.liveAt ? new Date(test.liveAt) : null;
+  const liveUntil = test.liveUntil ? new Date(test.liveUntil) : null;
+  
+  let status = 'live';
+  if (liveAt && liveAt > now) status = 'upcoming';
+  if (liveUntil && liveUntil < now) status = 'expired';
+
+  const typeStyles = {
+    'MHTCET-PCM': { color: '#2563eb', bg: '#eff6ff' },
+    'MHTCET-PCB': { color: '#059669', bg: '#ecfdf5' },
+    'JEE': { color: '#7c3aed', bg: '#f5f3ff' }
+  };
+
+  const style = typeStyles[test.type] || { color: 'var(--text-secondary)', bg: 'var(--gray-100)' };
+
+  return (
+    <div className="card animate-slide-up" style={{ 
+      animationDelay: `${index * 0.05}s`,
+      display: 'flex',
+      flexDirection: 'column',
+      height: '100%',
+      transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+      borderTop: `4px solid ${style.color}`
+    }}>
+      <div className="card-body" style={{ display: 'flex', flexDirection: 'column', flex: 1, padding: '24px' }}>
+        <div className="flex-between" style={{ marginBottom: '16px' }}>
+          <span style={{ 
+            fontSize: '0.7rem', 
+            fontWeight: '700', 
+            padding: '4px 10px', 
+            borderRadius: '6px', 
+            background: style.bg, 
+            color: style.color,
+            textTransform: 'uppercase'
+          }}>
+            {test.type}
+          </span>
+          {status === 'live' && <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--success)', fontSize: '0.75rem', fontWeight: '700' }}>
+            <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--success)', animation: 'pulse 2s infinite' }} />
+            LIVE
+          </div>}
+          {status === 'upcoming' && <span className="badge badge-warning">Upcoming</span>}
+          {status === 'expired' && <span className="badge badge-neutral">Expired</span>}
+        </div>
+
+        <h3 style={{ marginBottom: '12px', lineHeight: 1.4, fontSize: '1.15rem' }}>{test.title}</h3>
+        
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '24px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
+            <HelpCircle size={16} color="var(--gray-400)" />
+            <span>{test.totalQuestions || 0} Questions</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
+            <Clock size={16} color="var(--gray-400)" />
+            <span>{Math.floor(test.durationSeconds / 60)} Mins</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-secondary)', fontSize: '0.85rem', gridColumn: 'span 2' }}>
+            <Calendar size={16} color="var(--gray-400)" />
+            <span>Live until: {liveUntil ? liveUntil.toLocaleDateString() : 'Always'}</span>
+          </div>
+        </div>
+
+        <div style={{ marginTop: 'auto' }}>
+          <button 
+            className={`btn btn-full btn-md ${status === 'live' ? 'btn-primary' : 'btn-secondary'}`}
+            disabled={status !== 'live'}
+            onClick={onStart}
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+          >
+            {status === 'live' ? (
+              <>Start Test <ArrowRight size={16} /></>
+            ) : status === 'upcoming' ? (
+              'Not Yet Available'
+            ) : (
+              'Test Expired'
+            )}
+          </button>
+        </div>
+      </div>
+      
+      <style>{`
+        @keyframes pulse {
+          0% { opacity: 1; transform: scale(1); }
+          50% { opacity: 0.5; transform: scale(1.2); }
+          100% { opacity: 1; transform: scale(1); }
+        }
+      `}</style>
     </div>
   );
 }

@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './components/Layout';
 
 // Pages
+import Landing from './pages/Landing';
 import Login from './pages/Login';
 import Home from './pages/Home';
 import MockTests from './pages/MockTests';
@@ -31,7 +32,7 @@ const ApprovedRoute = ({ children }) => {
   const userStr = localStorage.getItem('user');
   const user = userStr ? JSON.parse(userStr) : {};
   
-  if (user.role === 'admin') return children; // Admins always pass
+  if (user.role === 'admin') return children; 
   if (user.status !== 'approved') return <Navigate to="/pending" replace />;
   return children;
 };
@@ -51,6 +52,7 @@ function App() {
   return (
     <Routes>
       {/* Public */}
+      <Route path="/"      element={<Layout><Landing /></Layout>} />
       <Route path="/login" element={<Login />} />
       
       {/* Pending Approval (logged in but not approved) */}
@@ -74,7 +76,6 @@ function App() {
       <Route path="/admin" element={<AdminRoute><Layout><AdminDashboard /></Layout></AdminRoute>} />
 
       {/* Redirects */}
-      <Route path="/" element={<Navigate to="/home" replace />} />
       <Route path="/dashboard" element={<Navigate to="/home" replace />} />
       <Route path="*" element={<Navigate to="/home" replace />} />
     </Routes>
